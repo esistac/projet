@@ -22,7 +22,6 @@ pipeline {
         stage('Lint') {
             steps {
                 echo "Exécution de flake8 via un conteneur Python..."
-                // Utilise une image légère pour exécuter flake8 sans polluer Jenkins
                 sh "docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c 'pip install flake8 && flake8 src/'"
             }
         }

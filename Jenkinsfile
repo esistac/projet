@@ -22,12 +22,12 @@ pipeline {
         // Stage 2 : Analyse statique de code via une image Docker Python
         stage('Lint') {
             steps {
-                echo "Vérification des fichiers disponibles et exécution de flake8..."
+                echo "Exécution de flake8 via un conteneur Python..."
                 sh """
-                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c '
-                        echo "--- Contenu du dossier /apps ---"
-                        ls -la
-                        echo "---------------------------------"
+                    docker run --rm \
+                    --volumes-from jenkins-local \
+                    -w /var/jenkins_home/workspace/task-manager-pipeline \
+                    python:3.11-slim sh -c '
                         pip install flake8
                         flake8 src/
                     '
@@ -40,7 +40,10 @@ pipeline {
             steps {
                 echo "Exécution de pytest et génération du rapport de couverture..."
                 sh """
-                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c '
+                    docker run --rm \
+                    --volumes-from jenkins-local \
+                    -w /var/jenkins_home/workspace/task-manager-pipeline \
+                    python:3.11-slim sh -c '
                         pip install -r requirements.txt pytest pytest-cov httpx
                         pytest --cov=src tests/ --cov-report=xml
                     '

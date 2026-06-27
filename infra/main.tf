@@ -14,8 +14,8 @@ data "docker_network" "cicd_net" {
 }
 
 resource "docker_image" "app_image" {
-  name         = "task-manager-api:${var.image_tag}"
-  force_remove = true
+  name         = "ghcr.io/esistac/task-manager-api:${var.image_tag}"
+  keep_locally = true
 }
 
 resource "docker_container" "app_container" {

@@ -1,9 +1,9 @@
 output "container_id" {
+  description = "L'identifiant unique du conteneur déployé"
   value       = docker_container.app_container.id
-  description = "ID du conteneur de Staging"
 }
 
-output "container_status" {
-  description = "Le statut actuel du conteneur"
-  value       = docker_container.app_container.state
+output "container_name" {
+  description = "Le nom du conteneur de l'application"
+  value       = docker_container.app_container.name
 }

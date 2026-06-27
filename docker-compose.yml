@@ -1,0 +1,19 @@
+version: '3.8'
+
+networks:
+  cicd-network:
+    external: true
+
+services:
+  task-manager:
+    build: .
+    container_name: task-manager-staging
+    ports:
+      - "8000:8000"
+    networks:
+      - cicd-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3

@@ -107,7 +107,10 @@ pipeline {
         // Stage 8 : Déploiement de l'Infrastructure via Terraform
         stage('IaC Apply') {
             steps {
-                echo "Initialisation et application Terraform via Docker..."
+                echo "Nettoyage de l'ancien conteneur s'il existe et application Terraform..."
+                // Cette ligne supprime l'ancien conteneur s'il tourne encore pour éviter le conflit
+                sh "docker rm -f task-manager-staging || true"
+                
                 sh """
                     docker run --rm \
                     --volumes-from jenkins-local \

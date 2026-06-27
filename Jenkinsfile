@@ -23,11 +23,7 @@ pipeline {
             steps {
                 echo "Exécution de flake8 via un conteneur Python..."
                 sh """
-                    docker run --rm \
-                    -v \$(pwd):/apps \
-                    -w /apps \
-                    python:3.11-slim \
-                    sh -c "pip install flake8 && flake8 src/"
+                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c "pip install flake8 && flake8 src/"
                 """
             }
         }
@@ -37,11 +33,7 @@ pipeline {
             steps {
                 echo "Exécution de pytest et génération du rapport de couverture..."
                 sh """
-                    docker run --rm \
-                    -v \$(pwd):/apps \
-                    -w /apps \
-                    python:3.11-slim \
-                    sh -c "pip install -r requirements.txt pytest pytest-cov httpx && pytest --cov=src tests/ --cov-report=xml"
+                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c "pip install -r requirements.txt pytest pytest-cov httpx && pytest --cov=src tests/ --cov-report=xml"
                 """
             }
         }

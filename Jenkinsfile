@@ -52,23 +52,19 @@ pipeline {
             }
         }
 
-        // Stage 4 : Analyse de la qualité du code par SonarQube
+        // Stage 4 : Analyse de la qualité du code via SonarQube
         stage('SonarQube Analysis') {
             steps {
                 script {
                     def scannerHome = tool 'SonarQubeScanner'
                     withSonarQubeEnv('SonarQubeServer') {
-                        sh "${scannerHome}/bin/sonar-scanner \
-                            -Dsonar.projectKey=task-manager-api \
-                            -Dsonar.sources=src/ \
-                            -Dsonar.tests=tests/ \
-                            -Dsonar.python.coverage.reportPaths=coverage.xml"
+                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=task-manager-api -Dsonar.sources=src/ -Dsonar.tests=tests/ -Dsonar.python.coverage.reportPaths=coverage.xml"
                     }
                 }
             }
         }
 
-        // Stage 5 : Blocage si la barrière de qualité échoue
+        // Stage 5 : Vérification de la barrière de qualité (Quality Gate)
         stage('Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -77,7 +73,7 @@ pipeline {
             }
         }
 
-        // Stage 6 : Analyse de vulnérabilités sur l'image Docker locale
+        // Stage 6 : Scan de vulnérabilités et sécurité de l'image Docker avec Trivy
         stage('Security Scan') {
             steps {
                 echo "Construction de l'image pour scan..."
@@ -87,7 +83,7 @@ pipeline {
             }
         }
 
-        // Stage 7 : Publication de l'image (uniquement sur la branche main)
+        // Stage 7 : Publication de l'image Docker finale (Uniquement sur la branche main)
         stage('Push Image') {
             when {
                 branch 'main'
@@ -95,8 +91,8 @@ pipeline {
             steps {
                 script {
                     try {
-                        withCredentials([usernamePassword(credentialsId: 'github-ghcr-creds', usernameVariable: 'GH_USER', passwordVariable: 'GH_TOKEN')]) {
-                            sh "echo ${GH_TOKEN} | docker login ${REGISTRY} -u ${GH_USER} --password-stdin"
+                        withCredentials([usernamePassword(credentialsId: 'github-ghcr-creds', usernameVariable: 'USER', passwordVariable: 'TOKEN')]) {
+                            sh "echo ${TOKEN} | docker login ${REGISTRY} -u ${USER} --password-stdin"
                             sh "docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
                             sh "docker tag ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${REGISTRY}/${IMAGE_NAME}:latest"
                             sh "docker push ${REGISTRY}/${IMAGE_NAME}:latest"
@@ -122,6 +118,17 @@ pipeline {
                     --volumes-from jenkins-local \
                     -w /var/jenkins_home/workspace/task-manager-pipeline/infra \
                     hashicorp/terraform:1.7.0 apply -var="image_tag=${IMAGE_TAG}" -auto-approve
+                """
+            }
+        }
+
+        // Stage 9 : Test de fumée pour valider le démarrage en production/staging
+        stage('Smoke Test') {
+            steps {
+                echo "Vérification de la santé de l'application déployée..."
+                sleep 5
+                sh """
+                    docker run --rm --network=host curlimages/curl:8.5.0 -s http://localhost:8000/health
                 """
             }
         }

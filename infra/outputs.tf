@@ -4,6 +4,6 @@ output "container_id" {
 }
 
 output "container_status" {
-  value       = docker_container.app_container.health_status
-  description = "Statut du Healthcheck"
+  description = "Le statut actuel du conteneur"
+  value       = docker_container.app_container.state
 }

@@ -129,3 +129,4 @@ pipeline {
         }
     }
 }
+# Mise a jour du pipeline

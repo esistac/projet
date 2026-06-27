@@ -45,6 +45,7 @@ pipeline {
                     -w /var/jenkins_home/workspace/task-manager-pipeline \
                     python:3.11-slim sh -c '
                         pip install -r requirements.txt pytest pytest-cov httpx
+                        export PYTHONPATH=.
                         pytest --cov=src tests/ --cov-report=xml
                     '
                 """

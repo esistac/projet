@@ -22,19 +22,12 @@ pipeline {
         stage('Lint') {
             steps {
                 echo "Exécution de flake8 via un conteneur Python..."
-                // Utilisation des triple guillemets sans l'intermédiaire de 'sh -c'
                 sh """
                     docker run --rm \
                     -v \$(pwd):/apps \
                     -w /apps \
                     python:3.11-slim \
-                    pip install flake8
-                    
-                    docker run --rm \
-                    -v \$(pwd):/apps \
-                    -w /apps \
-                    python:3.11-slim \
-                    flake8 src/
+                    sh -c "pip install flake8 && flake8 src/"
                 """
             }
         }

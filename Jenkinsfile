@@ -22,7 +22,9 @@ pipeline {
         stage('Lint') {
             steps {
                 echo "Exécution de flake8 via un conteneur Python..."
-                sh "docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c 'pip install flake8 && flake8 src/'"
+                sh """
+                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c "pip install flake8 && flake8 src/"
+                """
             }
         }
 
@@ -30,7 +32,9 @@ pipeline {
         stage('Build & Test') {
             steps {
                 echo "Exécution de pytest et génération du rapport de couverture..."
-                sh "docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c 'pip install -r requirements.txt pytest pytest-cov httpx && pytest --cov=src tests/ --cov-report=xml'"
+                sh """
+                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c "pip install -r requirements.txt pytest pytest-cov httpx && pytest --cov=src tests/ --cov-report=xml"
+                """
             }
         }
 
@@ -65,7 +69,6 @@ pipeline {
                 echo "Construction de l'image pour scan..."
                 sh "docker build -t ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ."
                 echo "Exécution du scan de sécurité avec Trivy via Docker..."
-                // Utilise le conteneur Trivy officiel pour scanner l'image locale
                 sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy:latest image --severity CRITICAL ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }

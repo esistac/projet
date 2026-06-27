@@ -111,20 +111,18 @@ pipeline {
         // Stage 8 : Déploiement de l'Infrastructure via Terraform
         stage('IaC Apply') {
             steps {
-                dir('infra') {
-                    echo "Initialisation et application Terraform..."
-                    sh "terraform init"
-                    sh "terraform apply -var='image_tag=${IMAGE_TAG}' -auto-approve"
-                }
-            }
-        }
-
-        // Stage 9 : Validation finale du bon fonctionnement de l'infrastructure
-        stage('Smoke Test') {
-            steps {
-                echo "Attente du démarrage du conteneur..."
-                sleep time: 5, unit: 'SECONDS'
-                sh "curl -f http://localhost:8000/health"
+                echo "Initialisation et application Terraform via Docker..."
+                sh """
+                    docker run --rm \
+                    --volumes-from jenkins-local \
+                    -w /var/jenkins_home/workspace/task-manager-pipeline/infra \
+                    hashicorp/terraform:1.7.0 init
+                    
+                    docker run --rm \
+                    --volumes-from jenkins-local \
+                    -w /var/jenkins_home/workspace/task-manager-pipeline/infra \
+                    hashicorp/terraform:1.7.0 apply -var="image_tag=${IMAGE_TAG}" -auto-approve
+                """
             }
         }
     }

@@ -85,3 +85,4 @@ def get_tasks():
     latency = time.time() - start_time
     REQUEST_LATENCY.labels(method="GET", endpoint="/tasks").observe(latency)
     return tasks_db
+# Force SonarQube update

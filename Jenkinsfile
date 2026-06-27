@@ -18,23 +18,32 @@ pipeline {
             }
         }
 
-        // Stage 2 : Analyse statique de code via une image Docker Python
+        // Stage 2 : Analyse statique de code via l'agent natif Docker de Jenkins
         stage('Lint') {
+            agent {
+                docker { 
+                    image 'python:3.11-slim'
+                    reuseNode true
+                }
+            }
             steps {
-                echo "Exécution de flake8 via un conteneur Python..."
-                sh """
-                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c "pip install flake8 && flake8 src/"
-                """
+                echo "Exécution de flake8 dans l'environnement Python..."
+                sh "pip install flake8 && flake8 src/"
             }
         }
 
         // Stage 3 : Exécution des tests unitaires et couverture
         stage('Build & Test') {
+            agent {
+                docker { 
+                    image 'python:3.11-slim'
+                    reuseNode true
+                }
+            }
             steps {
-                echo "Exécution de pytest et génération du rapport de couverture..."
-                sh """
-                    docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c "pip install -r requirements.txt pytest pytest-cov httpx && pytest --cov=src tests/ --cov-report=xml"
-                """
+                echo "Exécution de pytest..."
+                sh "pip install -r requirements.txt pytest pytest-cov httpx"
+                sh "pytest --cov=src tests/ --cov-report=xml"
             }
         }
 

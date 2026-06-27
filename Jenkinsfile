@@ -22,9 +22,12 @@ pipeline {
         // Stage 2 : Analyse statique de code via une image Docker Python
         stage('Lint') {
             steps {
-                echo "Exécution de flake8 via un conteneur Python..."
+                echo "Vérification des fichiers disponibles et exécution de flake8..."
                 sh """
                     docker run --rm -v \$(pwd):/apps -w /apps python:3.11-slim sh -c '
+                        echo "--- Contenu du dossier /apps ---"
+                        ls -la
+                        echo "---------------------------------"
                         pip install flake8
                         flake8 src/
                     '
